@@ -301,6 +301,339 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/06/20/iOS/RAC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="michengxian">
+      <meta itemprop="description" content="将来的你 一定会感激现在拼命的自己">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/06/20/iOS/RAC/" itemprop="url">
+                  RAC
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-06-20 14:17:44 / 修改时间：15:09:43" itemprop="dateCreated datePublished" datetime="2018-06-20T14:17:44+08:00">2018-06-20</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/iOS/" itemprop="url" rel="index"><span itemprop="name">iOS</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><code>RAC</code>是<code>ReactiveCocoa</code>的简称，它是<code>iOS</code>中的函数式响应式编程框架。</p>
+<blockquote>
+<p>下面是RAC的一些简单的应用：</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">//KVO</span><br><span class="line">RAC(self.textfieldAccount,text) = RACObserve(self.viewModel, account);</span><br><span class="line">//当长度&gt;3的时候返回</span><br><span class="line">RACSignal *accountValidSignal =</span><br><span class="line">    [[[RACObserve(self, account)</span><br><span class="line">        map:^id _Nullable(NSString *  _Nullable account) &#123;</span><br><span class="line">        return @(account.length &gt; 3);</span><br><span class="line">    &#125;]</span><br><span class="line">    skip:1]</span><br><span class="line">    distinctUntilChanged];</span><br><span class="line">//当满足accountValidSignal的条件的时候执行block返回textColor，并设置self.accountTextColor</span><br><span class="line">[[accountValidSignal</span><br><span class="line">    map:^id _Nullable(NSNumber *  _Nullable valid) &#123;</span><br><span class="line">        BOOL isValid = [valid boolValue];</span><br><span class="line">        UIColor *textColor = isValid ? [UIColor blackColor] : [UIColor redColor];</span><br><span class="line">        return textColor;</span><br><span class="line">    &#125;]</span><br><span class="line">    subscribeNext:^(UIColor*  _Nullable textColor) &#123;</span><br><span class="line">        self.accountTextColor = textColor;</span><br><span class="line">&#125;];</span><br><span class="line">//当满足acValid和passValid时返回validSignal</span><br><span class="line">RACSignal *validSignal = [RACSignal combineLatest:@[accountValidSignal,passValidSignal] reduce:^(NSNumber *acValid,NSNumber*passValid)&#123;</span><br><span class="line">        return @([acValid boolValue] &amp;&amp; [passValid boolValue]);</span><br><span class="line">    &#125;];</span><br><span class="line">//当满足validSignal时，按钮才能点击</span><br><span class="line">self.loginCommand = [[RACCommand alloc]initWithEnabled:validSignal</span><br><span class="line">                                               signalBlock:^RACSignal * _Nonnull(id  _Nullable input) &#123;</span><br><span class="line">                                                   return [self executeLoginSignal];</span><br><span class="line">    &#125;];</span><br><span class="line">//调用接口</span><br><span class="line">[[[RWTAuthenticationImpl loginWithAccount:self.account Pass:self.passWord]</span><br><span class="line">             doNext:^(id  _Nullable userInfo) &#123;</span><br><span class="line">                 [SVProgressHUD showSuccessWithStatus:@&quot;登录成功&quot;];</span><br><span class="line">                 [self.delegate respondsToSelector:@selector(RTWLogInViewModelDidLogin:)] ? [self.delegate RTWLogInViewModelDidLogin:userInfo] : nil;</span><br><span class="line">             &#125;]</span><br><span class="line">             doError:^(NSError * _Nonnull error) &#123;</span><br><span class="line">                 [SVProgressHUD showErrorWithStatus:@&quot;登录失败&quot;];</span><br><span class="line">             &#125;];</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">// 创建信号</span><br><span class="line">RACSignal *signal = [RACSignal createSignal:^RACDisposable * _Nullable(id  _Nonnull subscriber) &#123;</span><br><span class="line">    NSLog(@&quot;Hello&quot;);</span><br><span class="line">    // 发送信号</span><br><span class="line">    [subscriber sendNext:@&quot;This is RAC&quot;];</span><br><span class="line">    return nil;</span><br><span class="line">&#125;];</span><br><span class="line">// 订阅信号</span><br><span class="line">[signal subscribeNext:^(id  _Nullable x) &#123;</span><br><span class="line">    NSLog(@&quot;%@&quot;,x);</span><br><span class="line">&#125;];</span><br><span class="line">//UITextField(实时监听输入框内容)</span><br><span class="line">[[self.textField rac_textSignal] subscribeNext:^(NSString * _Nullable x) &#123;</span><br><span class="line">    NSLog(@&quot;%@&quot;, x);</span><br><span class="line">&#125;];</span><br><span class="line">//UIButton(Button点击事件)</span><br><span class="line">[[self.button rac_signalForControlEvents:(UIControlEventTouchUpInside)] subscribeNext:^(__kindof UIControl * _Nullable x) &#123;</span><br><span class="line">    NSLog(@&quot;%@&quot;,x);</span><br><span class="line">&#125;];</span><br><span class="line">//通知转Block</span><br><span class="line">[[[NSNotificationCenter defaultCenter] rac_addObserverForName:UIApplicationDidBecomeActiveNotification object:nil] subscribeNext:^(NSNotification * _Nullable x) &#123;</span><br><span class="line">    NSLog(@&quot;%@&quot;,x);</span><br><span class="line">&#125;];</span><br><span class="line">//@weakify(self);和@strongify(self);来避免block循环引用</span><br><span class="line">@weakify(self);</span><br><span class="line">[[self.textField rac_textSignal] subscribeNext:^(NSString * _Nullable x) &#123;</span><br><span class="line">    @strongify(self);</span><br><span class="line">    self.textField.text = @&quot;Hello&quot;;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+<p>文章参考<br><a href="https://www.jianshu.com/p/de98240ffcda" target="_blank" rel="noopener">最快让你上手ReactiveCocoa之基础篇</a></p>
+<p><a href="https://www.jianshu.com/p/e10e5ca413b7" target="_blank" rel="noopener">最快让你上手ReactiveCocoa之进阶篇</a></p>
+<p><a href="https://www.jianshu.com/p/de98240ffcda" target="_blank" rel="noopener">IOS架构之-MVVM架构/MVVM-C架构</a></p>
+<p><a href="https://blog.csdn.net/sharpyl/article/details/78650625" target="_blank" rel="noopener">ReactiveCocoa进阶</a></p>
+<p><a href="http://blog.leichunfeng.com/blog/2015/12/25/reactivecocoa-v2-dot-5-yuan-ma-jie-xi-zhi-jia-gou-zong-lan/" target="_blank" rel="noopener">ReactiveCocoa v2.5 源码解析之架构总览</a></p>
+<p><a href="https://github.com/niwanglong/MVVM" target="_blank" rel="noopener">MVVM</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/06/20/书/书/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="michengxian">
+      <meta itemprop="description" content="将来的你 一定会感激现在拼命的自己">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/06/20/书/书/" itemprop="url">
+                  书
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-06-20 14:17:44 / 修改时间：14:57:28" itemprop="dateCreated datePublished" datetime="2018-06-20T14:17:44+08:00">2018-06-20</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/书/" itemprop="url" rel="index"><span itemprop="name">书</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="已读"><a href="#已读" class="headerlink" title="已读"></a>已读</h2><blockquote>
+<p>《一个人的朝圣》<br>《三体》<br>《解忧杂货铺》<br>《房思琪的初恋乐园》<br>《活着》-20180423</p>
+</blockquote>
+<hr>
+<h2 id="想读"><a href="#想读" class="headerlink" title="想读"></a>想读</h2><blockquote>
+<p>《如何阅读一本书》<br>《精力管理》<br>《如何高效阅读》</p>
+</blockquote>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/06/20/计划/代办计划/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -347,7 +680,7 @@
                 
               
 
-              <time title="创建时间：2018-06-20 14:17:44 / 修改时间：14:27:13" itemprop="dateCreated datePublished" datetime="2018-06-20T14:17:44+08:00">2018-06-20</time>
+              <time title="创建时间：2018-06-20 14:17:44 / 修改时间：14:29:45" itemprop="dateCreated datePublished" datetime="2018-06-20T14:17:44+08:00">2018-06-20</time>
             
 
             
@@ -404,8 +737,7 @@
 
       
         
-          
-            <h2 id="iOS"><a href="#iOS" class="headerlink" title="iOS"></a>iOS</h2><ul>
+          <h2 id="iOS"><a href="#iOS" class="headerlink" title="iOS"></a>iOS</h2><ul>
 <li>RAC</li>
 <li>UIWebView换成WKWebView</li>
 <li>xib</li>
@@ -413,13 +745,173 @@
 <li>MyLayout、Masonry 布局</li>
 </ul>
 <hr>
-<h2 id="java"><a href="#java" class="headerlink" title="java"></a>java</h2><ul>
-<li>spring框架</li>
-<li>熟悉各个模块的数据库</li>
-</ul>
-<hr>
-<h2 id="学习"><a href="#学习" class="headerlink" title="学习"></a>学习</h2><ul>
-<li>MEM</li>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/06/20/计划/代办计划/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/06/20/资料/资料/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="michengxian">
+      <meta itemprop="description" content="将来的你 一定会感激现在拼命的自己">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/06/20/资料/资料/" itemprop="url">
+                  资料
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-06-20 14:17:44 / 修改时间：15:15:42" itemprop="dateCreated datePublished" datetime="2018-06-20T14:17:44+08:00">2018-06-20</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/资料/" itemprop="url" rel="index"><span itemprop="name">资料</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="iOS"><a href="#iOS" class="headerlink" title="iOS"></a>iOS</h2><ul>
+<li><a href="http://www.cocoachina.com/ios/20170907/20495.html" target="_blank" rel="noopener">搭建app框架-MVVM+RAC+路由 框架</a></li>
+<li><a href="https://github.com/chenxiancai/STCObfuscator" target="_blank" rel="noopener">代码混淆</a></li>
+<li><a href="https://flutterchina.club/get-started/codelab" target="_blank" rel="noopener">flutter(类似RN)</a></li>
+<li><a href="https://www.jianshu.com/u/b09c3959ab3b" target="_blank" rel="noopener">ReactNative、直播 等</a></li>
 </ul>
 <hr>
 
@@ -712,7 +1204,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2018-06-14 17:26:31" itemprop="dateModified" datetime="2018-06-14T17:26:31+08:00">2018-06-14</time>
+                <time title="修改时间：2018-06-20 14:31:07" itemprop="dateModified" datetime="2018-06-20T14:31:07+08:00">2018-06-20</time>
               
             
           </span>
@@ -764,9 +1256,7 @@
 
       
         
-          
-            <p>##创建Github</p>
-<blockquote>
+          <h2 id="创建Github"><a href="#创建Github" class="headerlink" title="创建Github"></a>创建Github</h2><blockquote>
 <p>首先我们需要创建一个<a href="https://github.com" target="_blank" rel="noopener">Github</a>账户，这没什么好说的。</p>
 </blockquote>
 <p><img src="https://upload-images.jianshu.io/upload_images/1621313-5873463ea0a2ea2a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Github"></p>
@@ -775,38 +1265,13 @@
 </blockquote>
 <p><img src="https://upload-images.jianshu.io/upload_images/1621313-6d58019cdbce3298.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="repository.png"><br>Github部分到此结束</p>
 <hr>
-<p>##进入Hexo环节</p>
-<blockquote>
-<p>打开终端，执行命令安装Hexo</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo npm install -g hexo</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>初始化</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ hexo init</span><br><span class="line">$ npm install</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>打开本地服务器</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hexo s</span><br><span class="line">访问地址</span><br><span class="line">http://localhost:4000/</span><br><span class="line">访问不到页面解决办法：使用Ctrl+C中断本地服务，使用命令hexo s -p 端口(0-6355)重新开启本地服务，访问http://localhost:端口/可以看到博客页面了。</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>再执行一些Hexo命令</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">清空静态页面</span><br><span class="line">hexo clean</span><br><span class="line">生成静态页面</span><br><span class="line">hexo generate</span><br><span class="line">部署 </span><br><span class="line">hexo deploy</span><br><span class="line">输入地址就可以访问自己的博客了http://自己的用户名.github.io</span><br></pre></td></tr></table></figure>
-<p>至此，教程结束，不过别急，如果想让自己的博客变得好看点，点击<a href="https://hexo.io/themes/" target="_blank" rel="noopener">Hexo</a>进入他的官网可以慢慢挑选各种好看的主题。</p>
-<hr>
-<p>##博客更改主题<br>本人使用的是下载量最高的next主题，所以以<code>next</code>为例：</p>
-<blockquote>
-<p>在博客的根目录下执行</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/iissnan/hexo-theme-next themes/next</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>打开根目录下的<code>_config.yml</code>文件，搜索<code>theme:</code>，然后改成<code>theme: next</code>，因为我的是<code>next</code>，所以<code>theme</code>后面是<code>next</code>，可以把<code>next</code>换成你选的主题，注意<code>theme:</code>与<code>next</code>之间有个空格。</p>
-</blockquote>
-<p>然后执行</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">清空静态页面</span><br><span class="line">hexo clean</span><br><span class="line">生成静态页面</span><br><span class="line">hexo generate</span><br><span class="line">部署 </span><br><span class="line">hexo deploy</span><br><span class="line">输入地址就可以访问自己的博客了http://自己的用户名.github.io</span><br></pre></td></tr></table></figure>
-<p>参考资料：<br><a href="https://blog.csdn.net/yanzi1225627/article/details/54566792" target="_blank" rel="noopener">Mac平台打造github上hexo博客全过程</a></p>
-
-          
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2016/06/01/教程/Github+Hexo搭建个人博客/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -921,7 +1386,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2018-06-14 16:49:15" itemprop="dateModified" datetime="2018-06-14T16:49:15+08:00">2018-06-14</time>
+                <time title="修改时间：2018-06-20 14:29:32" itemprop="dateModified" datetime="2018-06-20T14:29:32+08:00">2018-06-20</time>
               
             
           </span>
@@ -973,12 +1438,7 @@
 
       
         
-          <p>#一级标题</p>
-<p>##二级标题</p>
-<p>###三级标题</p>
-<p>####四级标题</p>
-<p>#####五级标题</p>
-<p>######六级标题</p>
+          <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 一级标题</span><br><span class="line">## 二级标题</span><br><span class="line">### 三级标题</span><br><span class="line">#### 四级标题</span><br><span class="line">##### 五级标题</span><br><span class="line">###### 六级标题</span><br></pre></td></tr></table></figure>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2016/06/01/教程/Markdown 语法和 MWeb 写作使用说明/#more" rel="contents">
@@ -1065,7 +1525,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-count">7</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -1084,7 +1544,13 @@
                     
                       
                     
-                    <span class="site-state-item-count">3</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">6</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -1115,7 +1581,13 @@
                     
                       
                     
-                    <span class="site-state-item-count">9</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
