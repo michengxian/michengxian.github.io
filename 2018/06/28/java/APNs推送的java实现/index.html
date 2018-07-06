@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.3.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.3.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.3.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.3.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="APNs是苹果推送通知服务，在设备与苹果的推送通知服务器会保持常连接状态。当你想发送一个推送通知给某个用户的iPhone上的应用程序时，你可以使用APNs 发送一个推送消息给目标设备上已安装的某个应用程序。  流程 当在iPhone上第一次打开某个应用时，iOS设备会跟APNs Service索要deviceToken, 应用程序将上一步得到的deviceToken发送给后台，后台保存好当前用户">
+<meta name="keywords" content="iOS,java">
+<meta property="og:type" content="article">
+<meta property="og:title" content="APNs">
+<meta property="og:url" content="http://yoursite.com/2018/06/28/java/APNs推送的java实现/index.html">
+<meta property="og:site_name" content="博客">
+<meta property="og:description" content="APNs是苹果推送通知服务，在设备与苹果的推送通知服务器会保持常连接状态。当你想发送一个推送通知给某个用户的iPhone上的应用程序时，你可以使用APNs 发送一个推送消息给目标设备上已安装的某个应用程序。  流程 当在iPhone上第一次打开某个应用时，iOS设备会跟APNs Service索要deviceToken, 应用程序将上一步得到的deviceToken发送给后台，后台保存好当前用户">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-07-06T06:03:04.063Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="APNs">
+<meta name="twitter:description" content="APNs是苹果推送通知服务，在设备与苹果的推送通知服务器会保持常连接状态。当你想发送一个推送通知给某个用户的iPhone上的应用程序时，你可以使用APNs 发送一个推送消息给目标设备上已安装的某个应用程序。  流程 当在iPhone上第一次打开某个应用时，iOS设备会跟APNs Service索要deviceToken, 应用程序将上一步得到的deviceToken发送给后台，后台保存好当前用户">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/06/28/java/APNs推送的java实现/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>APNs | 博客</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">个人博客</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/06/28/java/APNs推送的java实现/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="michengxian">
+      <meta itemprop="description" content="将来的你 一定会感激现在拼命的自己">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">APNs
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-06-28 10:30:00" itemprop="dateCreated datePublished" datetime="2018-06-28T10:30:00+08:00">2018-06-28</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-07-06 14:03:04" itemprop="dateModified" datetime="2018-07-06T14:03:04+08:00">2018-07-06</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p><code>APNs</code>是苹果推送通知服务，在设备与苹果的推送通知服务器会保持常连接状态。当你想发送一个推送通知给某个用户的<code>iPhone</code>上的应用程序时，你可以使用<code>APNs</code> 发送一个推送消息给目标设备上已安装的某个应用程序。</p>
+</blockquote>
+<h2 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h2><ol>
+<li>当在<code>iPhone</code>上第一次打开某个应用时，<code>iOS</code>设备会跟<code>APNs Service</code>索要<code>deviceToken</code>,</li>
+<li>应用程序将上一步得到的<code>deviceToken</code>发送给后台，后台保存好当前用户的<code>deviceToken</code></li>
+<li>服务端向<code>APNs Service</code>发送消息</li>
+<li><code>APNs Service</code>将消息发送给<code>iPhone</code>应用程序</li>
+</ol>
+<hr>
+<h2 id="iOS"><a href="#iOS" class="headerlink" title="iOS"></a>iOS</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (void)application:(UIApplication*)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData*)deviceToken</span><br><span class="line">&#123;</span><br><span class="line">    NSString *deviceTokenString = [NSString stringWithFormat:@&quot;%@&quot;, deviceToken];</span><br><span class="line">    NSString *string = [deviceTokenString stringByReplacingOccurrencesOfString:@&quot; &quot; withString:@&quot;&quot;];</span><br><span class="line">    string = [string stringByReplacingOccurrencesOfString:@&quot;&lt;&quot; withString:@&quot;&quot;];</span><br><span class="line">    string = [string stringByReplacingOccurrencesOfString:@&quot;&gt;&quot; withString:@&quot;&quot;];</span><br><span class="line">    DLog(@&quot;------------------获取deviceToken--------\n%@&quot;,string);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (void)application:(UIApplication*)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void(^)(UIBackgroundFetchResult))completionHandler</span><br><span class="line">&#123;</span><br><span class="line">    //在这里对收到的消息进行相应的处理</span><br><span class="line">    DLog(@&quot;-------------------iOS7以后，消息推送成功后的回调&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="java-基于二进制"><a href="#java-基于二进制" class="headerlink" title="java 基于二进制"></a>java 基于二进制</h2><blockquote>
+<p><code>pom.xml</code>加入<code>maven</code>依赖</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">  &lt;groupId&gt;org.bouncycastle&lt;/groupId&gt;</span><br><span class="line">  &lt;artifactId&gt;bcprov-jdk16&lt;/artifactId&gt;</span><br><span class="line">  &lt;version&gt;1.45&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">  &lt;groupId&gt;commons-io&lt;/groupId&gt;</span><br><span class="line">  &lt;artifactId&gt;commons-io&lt;/artifactId&gt;</span><br><span class="line">  &lt;version&gt;2.0.1&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">  &lt;groupId&gt;commons-lang&lt;/groupId&gt;</span><br><span class="line">  &lt;artifactId&gt;commons-lang&lt;/artifactId&gt;</span><br><span class="line">  &lt;version&gt;2.5&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">  &lt;groupId&gt;org.apache.logging.log4j&lt;/groupId&gt;</span><br><span class="line">  &lt;artifactId&gt;log4j-slf4j-impl&lt;/artifactId&gt;</span><br><span class="line">  &lt;scope&gt;runtime&lt;/scope&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">  &lt;groupId&gt;com.github.fernandospr&lt;/groupId&gt;</span><br><span class="line">  &lt;artifactId&gt;javapns-jdk16&lt;/artifactId&gt;</span><br><span class="line">  &lt;version&gt;2.2.1&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line">import javapns.devices.Device;</span><br><span class="line">import javapns.devices.implementations.basic.BasicDevice;</span><br><span class="line">import javapns.notification.AppleNotificationServerBasicImpl;</span><br><span class="line">import javapns.notification.PushNotificationManager;</span><br><span class="line">import javapns.notification.PushNotificationPayload;</span><br><span class="line">import javapns.notification.PushedNotification;</span><br><span class="line">import org.apache.commons.lang.StringUtils;</span><br><span class="line"></span><br><span class="line">import java.util.ArrayList;</span><br><span class="line">import java.util.List;</span><br><span class="line"></span><br><span class="line">public class ApnsSend &#123;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) throws Exception</span><br><span class="line">    &#123;</span><br><span class="line">        //生产</span><br><span class="line">        Boolean isProduction=true;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        String deviceToken;</span><br><span class="line">        String alert;//push的内容</span><br><span class="line">        int badge ;//图标小红圈的数值</span><br><span class="line">        String sound;////铃音</span><br><span class="line">        if (isProduction)&#123;//生产</span><br><span class="line">            deviceToken = &quot;6541acccc39dc8ebe810fe844286684877ea2844c927acfb931507b52d61d966&quot;;//生产</span><br><span class="line">            alert = &quot;生产证书推送&quot;;//push的内容</span><br><span class="line">            badge = 10;</span><br><span class="line">            sound = &quot;default&quot;;</span><br><span class="line">        &#125;</span><br><span class="line">        else &#123;//测试</span><br><span class="line">            deviceToken = &quot;e90440a91269e2a409f898f4176460ab693d8799d6f3deab822c20125e9e8286&quot;;//生产</span><br><span class="line">            alert = &quot;测试证书推送&quot;;//push的内容</span><br><span class="line">            badge = 10;</span><br><span class="line">            sound = &quot;default&quot;;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        List&lt;String&gt; tokens = new ArrayList&lt;String&gt;();</span><br><span class="line">        tokens.add(deviceToken);</span><br><span class="line">        String certificatePath = &quot;/Users/biostime/Desktop/tuisong/push1.p12&quot;;</span><br><span class="line">        String certificatePassword = &quot;123456&quot;;//此处注意导出的证书密码不能为空因为空密码会报错</span><br><span class="line">        boolean sendCount = true;</span><br><span class="line"></span><br><span class="line">        try</span><br><span class="line">        &#123;</span><br><span class="line">            PushNotificationPayload payLoad = new PushNotificationPayload();</span><br><span class="line">            payLoad.addAlert(alert); // 消息内容</span><br><span class="line">            payLoad.addBadge(badge); // iphone应用图标上小红圈上的数值</span><br><span class="line">            if (!StringUtils.isBlank(sound))</span><br><span class="line">            &#123;</span><br><span class="line">                payLoad.addSound(sound);//铃音</span><br><span class="line">            &#125;</span><br><span class="line">            PushNotificationManager pushManager = new PushNotificationManager();</span><br><span class="line">            //true：表示的是产品发布推送服务 false：表示的是产品测试推送服务</span><br><span class="line">            pushManager.initializeConnection(new AppleNotificationServerBasicImpl(certificatePath, certificatePassword, isProduction));</span><br><span class="line">            List&lt;PushedNotification&gt; notifications = new ArrayList&lt;PushedNotification&gt;();</span><br><span class="line">            // 发送push消息</span><br><span class="line">            if (sendCount)</span><br><span class="line">            &#123;</span><br><span class="line">                Device device = new BasicDevice();</span><br><span class="line">                device.setToken(tokens.get(0));</span><br><span class="line">                PushedNotification notification = pushManager.sendNotification(device, payLoad, true);</span><br><span class="line">                notifications.add(notification);</span><br><span class="line">            &#125;</span><br><span class="line">            else</span><br><span class="line">            &#123;</span><br><span class="line">                List&lt;Device&gt; device = new ArrayList&lt;Device&gt;();</span><br><span class="line">                for (String token : tokens)</span><br><span class="line">                &#123;</span><br><span class="line">                    device.add(new BasicDevice(token));</span><br><span class="line">                &#125;</span><br><span class="line">                notifications = pushManager.sendNotifications(payLoad, device);</span><br><span class="line">            &#125;</span><br><span class="line">            List&lt;PushedNotification&gt; failedNotifications = PushedNotification.findFailedNotifications(notifications);</span><br><span class="line">            List&lt;PushedNotification&gt; successfulNotifications = PushedNotification.findSuccessfulNotifications(notifications);</span><br><span class="line">            int failed = failedNotifications.size();</span><br><span class="line">            int successful = successfulNotifications.size();</span><br><span class="line"></span><br><span class="line">            System.out.print(&quot;failed:&quot;+failed+&quot;\n&quot;+&quot;success:&quot;+successful);</span><br><span class="line">            pushManager.stopConnection();</span><br><span class="line">        &#125;</span><br><span class="line">        catch (Exception e)</span><br><span class="line">        &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>不过，以上方法会存在一个问题，你会发现，当你发送的内容大于256字节的时候，会发现推送失败，所以就有了下面的方法</p>
+<hr>
+<h2 id="基于HTTP-2"><a href="#基于HTTP-2" class="headerlink" title="基于HTTP/2"></a>基于<code>HTTP/2</code></h2><p>见<code>git</code>地址</p>
+<p><a href="https://github.com/michengxian/java-http2-APNs" target="_blank" rel="noopener">java-http2-APNs</a></p>
+<p>在<code>com.APNs.http2.core.Example</code>文件中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">public static void main (String[] args) throws FileNotFoundException &#123;</span><br><span class="line">       //p12文件的路径</span><br><span class="line">        String certificatePath = &quot;/Users/biostime/Documents/java-http2-APNs/push/src/main/webapp/bcenterProduction.p12&quot;;</span><br><span class="line"></span><br><span class="line">        String deviceToken = &quot;9043c7ca7e92eb7f99969ae87d0205e71097d25153cb347cba91a7609e659311&quot;;</span><br><span class="line"></span><br><span class="line">        InputStream inputStream = new FileInputStream(certificatePath);</span><br><span class="line"></span><br><span class="line">        ApnsConfig config = new ApnsConfig();</span><br><span class="line">        config.setName(&quot;name1&quot;);// 推送服务名称</span><br><span class="line">        config.setDevEnv(false);// 是否是开发环境</span><br><span class="line">        config.setKeyStore(inputStream);// 证书</span><br><span class="line">        config.setPassword(&quot;123456&quot;);// 证书密码</span><br><span class="line">        config.setPoolSize(5);// 线程池大小</span><br><span class="line">        config.setTimeout(3000);// TCP连接超时时间</span><br><span class="line">        config.setTopic(&quot;com.biostime.business.center&quot;);// 标题,即证书的bundleID</span><br><span class="line"></span><br><span class="line">        ApnsService service= ApnsServiceManager.createService(config);</span><br><span class="line"></span><br><span class="line">        ErrorDispatcher.getInstance().addListener(new ErrorListener() &#123;</span><br><span class="line">            @Override</span><br><span class="line">            public void handle(ErrorModel errorModel) &#123;</span><br><span class="line">                System.out.print(&quot;收到错误监听:&quot; + errorModel);</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        Payload payload = new Payload();</span><br><span class="line">        payload.setAlert(&quot;通知&quot;);</span><br><span class="line">        payload.setBadge(1); // iphone应用图标上小红圈上的数值</span><br><span class="line">        payload.setSound(&quot;default&quot;);</span><br><span class="line">        payload.addParam(&quot;module&quot;,&quot;person_msg&quot;);</span><br><span class="line">        payload.addParam(&quot;sm&quot;,&quot;BBSN&quot;);</span><br><span class="line">        payload.addParam(&quot;redirectType&quot;,&quot;native&quot;);</span><br><span class="line">        payload.addParam(&quot;title&quot;,&quot;你的交流圈话题&quot;);</span><br><span class="line">        payload.addParam(&quot;url&quot;,&quot;http://test-01.biostime.us/merchant_h5/topicGroup/html5/topicDetail.html?topicId=164&quot;);</span><br><span class="line"></span><br><span class="line">       PushNotification notification = new PushNotification();</span><br><span class="line">        notification.setPayload(payload);</span><br><span class="line">        notification.setToken(deviceToken);</span><br><span class="line"></span><br><span class="line">       service = ApnsServiceManager.getService(config.getName());</span><br><span class="line">        service.sendNotification(notification);// 异步发送</span><br><span class="line">//        boolean result = service.sendNotificationSynch(notification);// 同步发送</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>用该方法，可大大的增加消息内容的长度。4K大小，基本上够用了。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/iOS/" rel="tag"># iOS</a>
+          
+            <a href="/tags/java/" rel="tag"># java</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/06/20/iOS/UIWebView与WKWebView清除缓存/" rel="next" title="UIWebView与WKWebView清除缓存">
+                <i class="fa fa-chevron-left"></i> UIWebView与WKWebView清除缓存
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/06/28/iOS/Coordinator/" rel="prev" title="Coordinator">
+                Coordinator <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">michengxian</p>
+              <p class="site-description motion-element" itemprop="description">将来的你 一定会感激现在拼命的自己</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#流程"><span class="nav-number">1.</span> <span class="nav-text">流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iOS"><span class="nav-number">2.</span> <span class="nav-text">iOS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#java-基于二进制"><span class="nav-number">3.</span> <span class="nav-text">java 基于二进制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基于HTTP-2"><span class="nav-number">4.</span> <span class="nav-text">基于HTTP/2</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">michengxian</span>
+
+  
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Gemini</a> v6.3.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.3.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.3.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.3.0"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
